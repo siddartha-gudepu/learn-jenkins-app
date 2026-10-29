@@ -115,6 +115,7 @@ pipeline {
 
             steps {
                 sh '''
+                    echo "hi ${env.STAGING_URL}"
                     npx playwright test  --reporter=html
                 '''
             }
@@ -162,6 +163,7 @@ pipeline {
 
             environment {
                 CI_ENVIRONMENT_URL = 'https://wonderful-sundae-ca54c0.netlify.app'
+                NETLIFY_TEAM_BYPASS_TOKEN = credentials('netlify-team-bypass-token')
             }
 
             steps {
