@@ -69,7 +69,7 @@ pipeline {
 
                     post {
                         always {
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Local E2E', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -89,19 +89,15 @@ pipeline {
                     node_modules/.bin/netlify --version
                     echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json || {
-                        deploy_status=$?
-                        cat deploy-output.json
-                        exit "$deploy_status"
-                    }
+                    node_modules/.bin/netlify deploy --dir=build --json > deploy-output.json
                 '''
-                script{
-                    env.STAGING_URL = sh(script:"node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json",returnStdout: true)
+                script {
+                    env.STAGING_URL = sh(script: "node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json", returnStdout: true)
                 }
             }
         }
 
-        stage('staging E2E') {
+        stage('Staging E2E') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -115,7 +111,6 @@ pipeline {
 
             steps {
                 sh '''
-                    echo "hi ${env.STAGING_URL}"
                     npx playwright test  --reporter=html
                 '''
             }
@@ -163,7 +158,6 @@ pipeline {
 
             environment {
                 CI_ENVIRONMENT_URL = 'https://wonderful-sundae-ca54c0.netlify.app'
-                NETLIFY_TEAM_BYPASS_TOKEN = credentials('netlify-team-bypass-token')
             }
 
             steps {
@@ -174,7 +168,7 @@ pipeline {
 
             post {
                 always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Prod E2E', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
         }
